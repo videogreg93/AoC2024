@@ -35,13 +35,22 @@ object Day5 {
                 rules.put(split[0].toInt(), currentRule )
             } else if (it.contains(",")) {
                 val split = ArrayList(it.split(",").map { it.toInt() })
+                val splitCopy = ArrayList(split)
                 val initiallyValid = checkLineValid(split, rules)
+                var loopBreak = 0
                 if (!initiallyValid) {
-                    val ordering = ArrayList<Int>()
-                    while (split.isNotEmpty()) {
-                       val toInsert = split.removeFirst()
-                       val befores = rules.values.filter { it.filter { it.after == toInsert } }
+                    var invalidRule = getInvalidRule(split, rules)
+                    while (invalidRule != null) {
+                        val nextIndex = split.indexOf(invalidRule.before) - 1
+                        val tmp = split[nextIndex]
+                        split[nextIndex] = split[nextIndex + 1]
+                        split[nextIndex + 1] = tmp
+                        invalidRule = getInvalidRule(split, rules)
+                        loopBreak++
+                        if (loopBreak > 1000) error("Too many loops ${input.indexOf(it)}")
                     }
+
+                    total += split[split.lastIndex/2]
 
                 }
             }
@@ -49,12 +58,26 @@ object Day5 {
         println(total)
     }
 
+    private fun getInvalidRule(
+        split: List<Int>,
+        rules: HashMap<Int, ArrayList<Rule>>
+    ): Rule? {
+        split.forEachIndexed { index, i ->
+            rules.getOrDefault(i, emptyList()).forEach { rule ->
+                val indexOfAfter = split.indexOf(rule.after)
+                if (indexOfAfter != -1 && indexOfAfter <= index) return rule
+            }
+        }
+
+        return null
+    }
+
     private fun checkLineValid(
         split: List<Int>,
         rules: HashMap<Int, ArrayList<Rule>>
     ): Boolean {
         split.forEachIndexed { index, i ->
-            rules.getValue(i).forEach { rule ->
+            rules.getOrDefault(i, emptyList()).forEach { rule ->
                 val indexOfAfter = split.indexOf(rule.after)
                 if (indexOfAfter != -1 && indexOfAfter <= index) return false
             }
