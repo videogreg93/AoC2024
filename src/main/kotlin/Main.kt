@@ -2,7 +2,7 @@ import java.io.File
 
 
 fun main(args: Array<String>) {
-    Day5.part2()
+    Day7.part1()
 }
 
 fun loadLines(day: Int): List<String> {
